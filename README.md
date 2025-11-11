@@ -14,6 +14,50 @@ A modern, self-hosted cross-platform communications platform with a WhatsApp-lik
 - 🔄 **Online Status** - See when users are online
 - 🐳 **Docker Support** - Easy deployment with Docker Compose
 
+## 🚀 Super Simple Setup (3 Steps!)
+
+The easiest way to get Cross-Chat running on your machine:
+
+### Step 1: Install Docker
+**Already have Docker?** Skip to Step 2!
+
+**Don't have Docker?** Install it:
+- **Windows/Mac**: Download from [docker.com](https://www.docker.com/products/docker-desktop/)
+- **Ubuntu/Linux**: 
+  ```bash
+  curl -fsSL https://get.docker.com | sh
+  ```
+
+### Step 2: Get Cross-Chat
+```bash
+git clone https://github.com/QuizzityMC/Cross-Chat.git
+cd Cross-Chat
+```
+
+### Step 3: Start Everything!
+```bash
+docker-compose up -d
+```
+
+**That's it!** 🎉 
+
+Open your browser to:
+- **Web App**: http://localhost
+- **API**: http://localhost:3000
+
+### First Use
+1. Open http://localhost in your browser
+2. Click "Sign up" 
+3. Create an account
+4. Start chatting!
+
+### To Stop
+```bash
+docker-compose down
+```
+
+---
+
 ## Architecture
 
 ### Backend
