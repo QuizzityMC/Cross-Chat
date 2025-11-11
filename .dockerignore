@@ -1,0 +1,32 @@
+# Don't copy node_modules - we'll install in container
+# Commented out to allow copying if needed for faster builds
+# node_modules
+
+# Don't copy build artifacts
+dist
+build
+
+# Don't copy git files
+.git
+.gitignore
+
+# Don't copy environment files
+.env
+.env.local
+
+# Don't copy logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Don't copy OS files
+.DS_Store
+Thumbs.db
+
+# Don't copy test coverage
+coverage
+
+# Don't copy Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
