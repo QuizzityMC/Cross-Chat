@@ -2,14 +2,13 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Copy everything
+COPY . .
 
-# Install dependencies
-RUN npm ci --no-audit --no-fund --omit=dev
-
-# Copy application files
-COPY server ./server
+# Install dependencies if not present
+RUN if [ ! -d "node_modules" ]; then \
+      npm install --omit=dev --no-audit --no-fund; \
+    fi
 
 # Create uploads directory
 RUN mkdir -p server/uploads

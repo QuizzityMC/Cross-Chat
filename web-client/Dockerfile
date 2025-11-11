@@ -6,8 +6,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --no-audit --no-fund
+# Install dependencies (including devDependencies for build)
+RUN npm ci --no-audit --no-fund --include=dev && \
+    ls -la node_modules/.bin/vite || echo "Vite not found!"
 
 # Copy source files
 COPY . .
