@@ -32,9 +32,14 @@ If the automated setup doesn't work, follow these steps:
 
 ### Prerequisites
 - Node.js 18+
-- JDK 11 or newer (for Android)
+- **JDK 11 or 17** (for Android) - **Important:** JDK 21+ is NOT compatible with React Native 0.71.7
 - Android Studio with Android SDK
 - For iOS: macOS with Xcode
+
+**JDK Installation:**
+- Check your JDK version: `java -version`
+- If you have JDK 21+, you need to install JDK 17 or 11
+- Set JAVA_HOME to point to JDK 11 or 17 before building
 
 ### Steps
 
@@ -135,6 +140,7 @@ For production release, you need to sign the APK:
 - For physical device, ensure device and computer are on same network
 
 ### Build errors
+- **JDK version incompatibility**: If you see "Unsupported class file major version 65", you're using JDK 21+. React Native 0.71.7 requires JDK 11 or 17. Install JDK 17 and set JAVA_HOME accordingly.
 - Run `cd android && ./gradlew clean` 
 - Delete `android/app/build` directory
 - Run `npm run android` again

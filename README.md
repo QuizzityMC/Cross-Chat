@@ -176,6 +176,11 @@ npm run setup  # Automated setup script
 npm run android
 ```
 
+**Prerequisites for Android build:**
+- JDK 11 or 17 (NOT JDK 21+) - check with `java -version`
+- Android Studio with Android SDK
+- Android device or emulator
+
 #### What the setup script does:
 - Creates a temporary React Native 0.71.7 project
 - Copies android and ios directories
