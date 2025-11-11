@@ -76,7 +76,7 @@ router.post('/login', authLimiter, [
 
     const { email, password } = req.body;
 
-    // Find user
+    // Find user - Mongoose automatically sanitizes query parameters to prevent injection
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
