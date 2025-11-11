@@ -3,11 +3,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const { authLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
 // Register
-router.post('/register', [
+router.post('/register', authLimiter, [
   body('username').trim().isLength({ min: 3 }),
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
@@ -63,7 +64,7 @@ router.post('/register', [
 });
 
 // Login
-router.post('/login', [
+router.post('/login', authLimiter, [
   body('email').isEmail().normalizeEmail(),
   body('password').notEmpty()
 ], async (req, res) => {
