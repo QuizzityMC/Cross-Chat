@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: crosschat-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: crosschat
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - crosschat-network
+    ports:
+      - "27017:27017"
+
+  backend:
+    build: .
+    container_name: crosschat-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/crosschat
+      - PORT=3000
+    depends_on:
+      - mongodb
+    networks:
+      - crosschat-network
+    ports:
+      - "3000:3000"
+
+  web:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+    container_name: crosschat-web
+    restart: unless-stopped
+    networks:
+      - crosschat-network
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
+
+networks:
+  crosschat-network:
+    driver: bridge
