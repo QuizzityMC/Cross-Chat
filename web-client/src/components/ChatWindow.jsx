@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import './ChatWindow.css';
 
 const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
   const [messageInput, setMessageInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     scrollToBottom();
@@ -53,6 +55,47 @@ const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
     }
   };
 
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload file to server
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const fileData = await response.json();
+
+      // Send file message via socket
+      onSendMessage(file.name, fileData.messageType, fileData.url);
+      
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file. Please try again.');
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (messageInput.trim()) {
@@ -89,6 +132,28 @@ const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
     return otherUser?.avatar || '👤';
   };
 
+  const getUserStatus = () => {
+    if (!chat || chat.isGroup) return null;
+    const otherUser = chat.participants?.find((p) => p._id !== currentUser?.id);
+    if (!otherUser) return 'offline';
+    return otherUser.status || 'offline';
+  };
+
+  const formatUserStatus = () => {
+    if (isTyping) return 'typing...';
+    if (chat?.isGroup) return `${chat.participants?.length || 0} participants`;
+    
+    const status = getUserStatus();
+    if (status === 'online') return 'online';
+    
+    const otherUser = chat?.participants?.find((p) => p._id !== currentUser?.id);
+    if (otherUser?.lastSeen) {
+      return `last seen ${formatDistanceToNow(new Date(otherUser.lastSeen), { addSuffix: true })}`;
+    }
+    
+    return 'offline';
+  };
+
   if (!chat) {
     return (
       <div className="chat-window">
@@ -116,7 +181,7 @@ const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
           <div className="header-text">
             <div className="header-name">{getChatName()}</div>
             <div className="header-status">
-              {isTyping ? 'typing...' : 'online'}
+              {formatUserStatus()}
             </div>
           </div>
         </div>
@@ -157,7 +222,35 @@ const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
                 )}
                 <div className={`message ${isOwn ? 'message-out' : 'message-in'}`}>
                   <div className="message-content">
-                    <span className="message-text">{message.content}</span>
+                    {message.messageType === 'image' && message.mediaUrl && (
+                      <div className="message-media">
+                        <img src={message.mediaUrl} alt={message.content} style={{ maxWidth: '300px', borderRadius: '8px' }} />
+                      </div>
+                    )}
+                    {message.messageType === 'video' && message.mediaUrl && (
+                      <div className="message-media">
+                        <video controls style={{ maxWidth: '300px', borderRadius: '8px' }}>
+                          <source src={message.mediaUrl} />
+                        </video>
+                      </div>
+                    )}
+                    {message.messageType === 'audio' && message.mediaUrl && (
+                      <div className="message-media">
+                        <audio controls>
+                          <source src={message.mediaUrl} />
+                        </audio>
+                      </div>
+                    )}
+                    {message.messageType === 'file' && message.mediaUrl && (
+                      <div className="message-file">
+                        <a href={message.mediaUrl} download target="_blank" rel="noopener noreferrer">
+                          📎 {message.content}
+                        </a>
+                      </div>
+                    )}
+                    {(message.messageType === 'text' || !message.messageType) && (
+                      <span className="message-text">{message.content}</span>
+                    )}
                     <span className="message-time">
                       {format(new Date(message.createdAt), 'HH:mm')}
                       {isOwn && (
@@ -194,10 +287,31 @@ const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
             <path fill="currentColor" d="M9.153 11.603c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962zm-3.204 1.362c-.026-.307-.131 5.218 6.063 5.551 6.066-.25 6.066-5.551 6.066-5.551-6.078 1.416-12.129 0-12.129 0zm11.363 1.108s-.669 1.959-5.051 1.959c-3.505 0-5.388-1.164-5.607-1.959 0 0 5.912 1.055 10.658 0zM11.804 1.011C5.609 1.011.978 6.033.978 12.228s4.826 10.761 11.021 10.761S23.02 18.423 23.02 12.228c.001-6.195-5.021-11.217-11.216-11.217zM12 21.354c-5.273 0-9.381-3.886-9.381-9.159s3.942-9.548 9.215-9.548 9.548 4.275 9.548 9.548c-.001 5.272-4.109 9.159-9.382 9.159zm3.108-9.751c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962z"/>
           </svg>
         </button>
-        <button className="icon-button">
-          <svg viewBox="0 0 24 24" width="24" height="24">
-            <path fill="currentColor" d="M1.816 15.556v.002c0 1.502.584 2.912 1.646 3.972s2.472 1.647 3.974 1.647a5.58 5.58 0 0 0 3.972-1.645l9.547-9.548c.769-.768 1.147-1.767 1.058-2.817-.079-.968-.548-1.927-1.319-2.698-1.594-1.592-4.068-1.711-5.517-.262l-7.916 7.915c-.881.881-.792 2.25.214 3.261.959.958 2.423 1.053 3.263.215l5.511-5.512c.28-.28.267-.722.053-.936l-.244-.244c-.191-.191-.567-.349-.957.04l-5.506 5.506c-.18.18-.635.127-.976-.214-.098-.097-.576-.613-.213-.973l7.915-7.917c.818-.817 2.267-.699 3.23.262.5.501.802 1.1.849 1.685.051.573-.156 1.111-.589 1.543l-9.547 9.549a3.97 3.97 0 0 1-2.829 1.171 3.975 3.975 0 0 1-2.83-1.173 3.973 3.973 0 0 1-1.172-2.828c0-1.071.415-2.076 1.172-2.83l7.209-7.211c.157-.157.264-.579.028-.814L11.5 4.36a.572.572 0 0 0-.834.018l-7.205 7.207a5.577 5.577 0 0 0-1.645 3.971z"/>
-          </svg>
+        <input
+          type="file"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileSelect}
+          accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+        />
+        <button 
+          className="icon-button" 
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          title="Attach file"
+        >
+          {uploading ? (
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.3"/>
+              <path fill="none" stroke="currentColor" strokeWidth="2" d="M12 2 A10 10 0 0 1 22 12">
+                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+              </path>
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path fill="currentColor" d="M1.816 15.556v.002c0 1.502.584 2.912 1.646 3.972s2.472 1.647 3.974 1.647a5.58 5.58 0 0 0 3.972-1.645l9.547-9.548c.769-.768 1.147-1.767 1.058-2.817-.079-.968-.548-1.927-1.319-2.698-1.594-1.592-4.068-1.711-5.517-.262l-7.916 7.915c-.881.881-.792 2.25.214 3.261.959.958 2.423 1.053 3.263.215l5.511-5.512c.28-.28.267-.722.053-.936l-.244-.244c-.191-.191-.567-.349-.957.04l-5.506 5.506c-.18.18-.635.127-.976-.214-.098-.097-.576-.613-.213-.973l7.915-7.917c.818-.817 2.267-.699 3.23.262.5.501.802 1.1.849 1.685.051.573-.156 1.111-.589 1.543l-9.547 9.549a3.97 3.97 0 0 1-2.829 1.171 3.975 3.975 0 0 1-2.83-1.173 3.973 3.973 0 0 1-1.172-2.828c0-1.071.415-2.076 1.172-2.83l7.209-7.211c.157-.157.264-.579.028-.814L11.5 4.36a.572.572 0 0 0-.834.018l-7.205 7.207a5.577 5.577 0 0 0-1.645 3.971z"/>
+            </svg>
+          )}
         </button>
         <form onSubmit={handleSubmit} className="message-input-form">
           <input
@@ -206,9 +320,10 @@ const ChatWindow = ({ chat, messages, currentUser, onSendMessage, socket }) => {
             placeholder="Type a message"
             value={messageInput}
             onChange={handleInputChange}
+            disabled={uploading}
           />
         </form>
-        <button type="submit" className="send-button" onClick={handleSubmit} disabled={!messageInput.trim()}>
+        <button type="submit" className="send-button" onClick={handleSubmit} disabled={!messageInput.trim() || uploading}>
           <svg viewBox="0 0 24 24" width="24" height="24">
             <path fill="currentColor" d="M1.101 21.757L23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"/>
           </svg>

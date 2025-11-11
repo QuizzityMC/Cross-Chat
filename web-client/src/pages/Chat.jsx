@@ -17,8 +17,12 @@ const Chat = () => {
 
   useEffect(() => {
     // Initialize socket connection
-    socket = io('http://localhost:3000', {
-      auth: { token }
+    // In production, connect to same origin (nginx proxies /socket.io)
+    // In development, connect to backend server directly
+    const socketUrl = import.meta.env.DEV ? 'http://localhost:3000' : undefined;
+    socket = io(socketUrl, {
+      auth: { token },
+      path: '/socket.io'
     });
 
     socket.on('connect', () => {
@@ -33,15 +37,26 @@ const Chat = () => {
       loadChats();
     });
 
-    socket.on('user:status', ({ userId, status }) => {
+    socket.on('user:status', ({ userId, status, lastSeen }) => {
       setChats((prev) =>
         prev.map((chat) => ({
           ...chat,
           participants: chat.participants.map((p) =>
-            p._id === userId ? { ...p, status } : p
+            p._id === userId ? { ...p, status, lastSeen } : p
           )
         }))
       );
+      
+      // Also update selected chat if it contains this user
+      setSelectedChat((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          participants: prev.participants.map((p) =>
+            p._id === userId ? { ...p, status, lastSeen } : p
+          )
+        };
+      });
     });
 
     loadChats();
@@ -79,13 +94,15 @@ const Chat = () => {
     }
   };
 
-  const sendMessage = (content) => {
+  const sendMessage = (content, messageType = 'text', mediaUrl = '') => {
     if (!selectedChat || !content.trim()) return;
 
     const tempId = Date.now();
     socket.emit('message:send', {
       chatId: selectedChat._id,
       content,
+      messageType,
+      mediaUrl,
       tempId
     });
   };
