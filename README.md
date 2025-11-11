@@ -51,6 +51,12 @@ Open your browser to:
 3. Create an account
 4. Start chatting!
 
+> **⚠️ Security Note for Production**: The default setup uses a pre-configured JWT secret for ease of setup. For production deployments, create a `.env` file with a secure random `JWT_SECRET` before running `docker-compose up -d`:
+> ```bash
+> cp .env.example .env
+> # Edit .env and change JWT_SECRET to a long random string
+> ```
+
 ### To Stop
 ```bash
 docker-compose down
