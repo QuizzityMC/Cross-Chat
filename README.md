@@ -34,8 +34,13 @@ git clone https://github.com/QuizzityMC/Cross-Chat.git
 cd Cross-Chat
 ```
 
-### Step 3: Start Everything!
+### Step 3: Install Dependencies & Start Everything!
 ```bash
+# Install dependencies (required for Docker build)
+npm install --omit=dev
+cd web-client && npm install && cd ..
+
+# Start all services
 docker-compose up -d
 ```
 
