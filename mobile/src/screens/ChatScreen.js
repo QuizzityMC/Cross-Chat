@@ -13,6 +13,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
+import config from '../config';
 
 const ChatScreen = ({ route }) => {
   const { chatId } = route.params;
@@ -26,7 +27,7 @@ const ChatScreen = ({ route }) => {
     loadMessages();
 
     // Initialize socket
-    socketRef.current = io('http://localhost:3000', {
+    socketRef.current = io(config.SOCKET_URL, {
       auth: { token },
     });
 
@@ -46,7 +47,7 @@ const ChatScreen = ({ route }) => {
   const loadMessages = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/messages/${chatId}`,
+        `${config.API_URL}/api/messages/${chatId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
