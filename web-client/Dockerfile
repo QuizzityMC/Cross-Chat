@@ -1,18 +1,19 @@
 # Build stage
-FROM node:18-alpine as build
+FROM node:18-slim AS build
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Clean npm cache and install dependencies
+RUN npm cache clean --force && \
+    npm install --no-audit --no-fund --loglevel=error
 
 # Copy source files
 COPY . .
 
-# Build the app
+# Build the app  
 RUN npm run build
 
 # Production stage
