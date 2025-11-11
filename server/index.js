@@ -9,8 +9,10 @@ const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
 const chatRoutes = require('./routes/chats');
+const uploadRoutes = require('./routes/upload');
 const socketHandler = require('./socket/socketHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -63,6 +65,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chats', chatRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check
 app.get('/health', (req, res) => {

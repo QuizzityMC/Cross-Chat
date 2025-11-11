@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "setup": "bash setup.sh",
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",

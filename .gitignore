@@ -10,6 +10,8 @@ yarn-error.log*
 coverage/
 .nyc_output/
 *.sqlite
-uploads/
 .vscode/
 .idea/
+# Uploads directory - keep structure but ignore uploaded files
+server/uploads/*
+!server/uploads/.gitkeep

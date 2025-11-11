@@ -9,6 +9,9 @@ COPY . .
 RUN timeout 60 npm install --no-package-lock --no-audit --no-fund --loglevel=error 2>&1 || \
     echo "npm install had issues, but continuing with existing node_modules..."
 
+# Create uploads directory
+RUN mkdir -p server/uploads
+
 # Expose port
 EXPOSE 3000
 

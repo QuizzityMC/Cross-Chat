@@ -6,7 +6,22 @@ import Register from './pages/Register';
 import Chat from './pages/Chat';
 
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        backgroundColor: '#111b21'
+      }}>
+        <div style={{ color: '#aebac1' }}>Loading...</div>
+      </div>
+    );
+  }
+  
   return user ? children : <Navigate to="/login" />;
 };
 

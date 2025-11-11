@@ -9,6 +9,7 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
+import config from '../config';
 
 const ChatListScreen = ({ navigation }) => {
   const [chats, setChats] = useState([]);
@@ -20,7 +21,7 @@ const ChatListScreen = ({ navigation }) => {
 
   const loadChats = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/chats', {
+      const response = await axios.get(`${config.API_URL}/api/chats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setChats(response.data);

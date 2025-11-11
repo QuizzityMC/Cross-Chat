@@ -165,16 +165,26 @@ npm run build:linux    # Build for Linux
 ```
 
 ### Mobile App (Android)
+
+**Note:** The mobile app requires React Native native directories (android/ios) which are not included in the repository to keep it clean. We provide an automated setup script.
+
+#### Quick Setup (Recommended):
 ```bash
 cd mobile
 npm install
-
-# For development
+npm run setup  # Automated setup script
 npm run android
-
-# For production build
-npm run build:android
 ```
+
+#### What the setup script does:
+- Creates a temporary React Native 0.71.7 project
+- Copies android and ios directories
+- Updates package names and configurations
+- Cleans up temporary files
+
+For detailed instructions, troubleshooting, and manual setup, see [mobile/README.md](mobile/README.md).
+
+**Alternative:** Download pre-built APK from [Releases](https://github.com/QuizzityMC/Cross-Chat/releases) (coming soon)
 
 The APK will be in `mobile/android/app/build/outputs/apk/release/`
 
