@@ -1,12 +1,12 @@
-FROM node:18-alpine
+FROM node:18-slim
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy only package.json (avoid package-lock.json issues)
+COPY package.json ./
 
-# Install dependencies
-RUN npm install --production
+# Install all dependencies  
+RUN npm install --no-package-lock
 
 # Copy server files
 COPY server ./server

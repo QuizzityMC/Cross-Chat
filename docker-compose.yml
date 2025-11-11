@@ -18,11 +18,14 @@ services:
     build: .
     container_name: crosschat-backend
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/crosschat
       - PORT=3000
+      # SECURITY WARNING: Change this secret in production!
+      # For production, create a .env file with a secure random JWT_SECRET
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-in-production-use-a-long-random-string}
+      - NODE_ENV=${NODE_ENV:-production}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
     depends_on:
       - mongodb
     networks:
