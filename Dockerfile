@@ -2,12 +2,14 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy application files (including node_modules if present)
-COPY . .
+# Copy package files first for better caching
+COPY package*.json ./
 
-# Try to install/update dependencies, but don't fail if it times out
-RUN timeout 60 npm install --no-package-lock --no-audit --no-fund --loglevel=error 2>&1 || \
-    echo "npm install had issues, but continuing with existing node_modules..."
+# Install dependencies
+RUN npm ci --no-audit --no-fund --omit=dev
+
+# Copy application files
+COPY server ./server
 
 # Create uploads directory
 RUN mkdir -p server/uploads
