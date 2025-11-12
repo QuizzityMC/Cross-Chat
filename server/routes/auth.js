@@ -144,13 +144,14 @@ router.post('/demo-login', authLimiter, [
 
     const { email } = req.body;
 
-    // Verify it's a demo account
+    // Verify it's a demo account - this prevents injection attacks
+    // by ensuring only whitelisted email addresses can be used
     const isDemoAccount = DEMO_USERS.some(demo => demo.email === email);
     if (!isDemoAccount) {
       return res.status(400).json({ error: 'Invalid demo account' });
     }
 
-    // Find user
+    // Find user - email is validated against whitelist above, preventing injection
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: 'Demo account not found. Please restart the server to initialize demo data.' });
