@@ -1,17 +1,14 @@
 # Build stage
-FROM node:18-slim AS build
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Clean npm cache and install dependencies
-RUN npm cache clean --force && \
-    npm install --no-audit --no-fund --loglevel=error
-
-# Copy source files
+# Copy everything
 COPY . .
+
+# Install dependencies
+# Note: If you get vite not found errors, run `npm install` in web-client directory on your host first
+RUN npm install --no-audit --no-fund 2>&1 || true
 
 # Build the app  
 RUN npm run build

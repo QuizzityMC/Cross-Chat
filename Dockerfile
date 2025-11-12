@@ -1,13 +1,13 @@
-FROM node:18-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy application files (including node_modules if present)
+# Copy everything including node_modules if present
 COPY . .
 
-# Try to install/update dependencies, but don't fail if it times out
-RUN timeout 60 npm install --no-package-lock --no-audit --no-fund --loglevel=error 2>&1 || \
-    echo "npm install had issues, but continuing with existing node_modules..."
+# Install/update dependencies
+# Note: If you get MODULE_NOT_FOUND errors, run `npm install` on your host machine first
+RUN npm install --omit=dev --no-audit --no-fund 2>&1 || true
 
 # Create uploads directory
 RUN mkdir -p server/uploads
@@ -15,5 +15,5 @@ RUN mkdir -p server/uploads
 # Expose port
 EXPOSE 3000
 
-# Start server
+# Start server  
 CMD ["npm", "start"]

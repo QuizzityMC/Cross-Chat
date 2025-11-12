@@ -34,8 +34,13 @@ git clone https://github.com/QuizzityMC/Cross-Chat.git
 cd Cross-Chat
 ```
 
-### Step 3: Start Everything!
+### Step 3: Install Dependencies & Start Everything!
 ```bash
+# Install dependencies (required for Docker build)
+npm install --omit=dev
+cd web-client && npm install && cd ..
+
+# Start all services
 docker-compose up -d
 ```
 
@@ -175,6 +180,11 @@ npm install
 npm run setup  # Automated setup script
 npm run android
 ```
+
+**Prerequisites for Android build:**
+- JDK 11 or 17 (NOT JDK 21+) - check with `java -version`
+- Android Studio with Android SDK
+- Android device or emulator
 
 #### What the setup script does:
 - Creates a temporary React Native 0.71.7 project
