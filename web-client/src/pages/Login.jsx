@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
@@ -8,8 +8,26 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoAccounts, setDemoAccounts] = useState([]);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch demo accounts
+    const fetchDemoAccounts = async () => {
+      try {
+        const response = await fetch('/api/auth/demo-accounts');
+        if (response.ok) {
+          const data = await response.json();
+          setDemoAccounts(data.demoAccounts || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch demo accounts:', error);
+      }
+    };
+    fetchDemoAccounts();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +40,36 @@ const Login = () => {
       navigate('/');
     } else {
       setError(result.error);
+    }
+    setLoading(false);
+  };
+
+  const handleDemoLogin = async (demoEmail) => {
+    setError('');
+    setLoading(true);
+    setShowDemoModal(false);
+
+    try {
+      const response = await fetch('/api/auth/demo-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: demoEmail }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        navigate('/');
+        window.location.reload();
+      } else {
+        setError(data.error || 'Demo login failed');
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
     }
     setLoading(false);
   };
@@ -68,11 +116,51 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
+          <button 
+            type="button" 
+            className="demo-button" 
+            onClick={() => setShowDemoModal(true)}
+            disabled={loading}
+          >
+            🎭 Try Demo Account
+          </button>
+
           <div className="auth-footer">
             Don't have an account? <Link to="/register">Sign up</Link>
           </div>
         </form>
       </div>
+
+      {showDemoModal && (
+        <div className="modal-overlay" onClick={() => setShowDemoModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Choose a Demo Account</h2>
+            <p className="demo-description">
+              Try Cross-Chat without creating an account. Demo accounts are pre-configured and can chat in a shared group.
+            </p>
+            <div className="demo-accounts">
+              {demoAccounts.map((account, index) => (
+                <button
+                  key={index}
+                  className="demo-account-button"
+                  onClick={() => handleDemoLogin(account.email)}
+                  disabled={loading}
+                >
+                  <div className="demo-account-name">{account.displayName}</div>
+                  <div className="demo-account-about">{account.about}</div>
+                </button>
+              ))}
+            </div>
+            <button 
+              className="modal-close" 
+              onClick={() => setShowDemoModal(false)}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

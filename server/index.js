@@ -12,6 +12,7 @@ const chatRoutes = require('./routes/chats');
 const uploadRoutes = require('./routes/upload');
 const socketHandler = require('./socket/socketHandler');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const { initDemoData } = require('./utils/initDemoData');
 const path = require('path');
 
 const app = express();
@@ -54,8 +55,10 @@ app.use('/api/', apiLimiter);
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/crosschat', {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => {
+}).then(async () => {
   console.log('Connected to MongoDB');
+  // Initialize demo data
+  await initDemoData();
 }).catch((error) => {
   console.error('MongoDB connection error:', error);
 });
