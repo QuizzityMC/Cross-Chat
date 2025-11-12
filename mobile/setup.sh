@@ -37,7 +37,7 @@ fi
 # Create temporary directory
 TEMP_DIR="../temp_rn_project"
 echo "Creating temporary React Native project..."
-npx react-native init CrossChatTemp --directory="$TEMP_DIR" --version 0.71.7
+npx react-native init CrossChatTemp --directory="$TEMP_DIR" --version 0.76.9
 
 if [ $? -ne 0 ]; then
     echo "Error: Failed to create React Native project"
